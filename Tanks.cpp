@@ -54,7 +54,7 @@ void rendering(std::string(*render)[20]) // отрисовывает игров�
     gotoxy(0, 0);
 }
 
-void look(std::string** render) // ставит "render[x][y]" на выбранное место
+void look(std::string(*render)[20]) // ставит "render[x][y]" на выбранное место
 {
     gotoxy(13, 14);
     std::cout << render[13][14];
