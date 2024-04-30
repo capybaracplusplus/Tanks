@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <vector>
 #include <string>
@@ -6,81 +7,45 @@
 #include <windows.h>
 #include <ctime>
 #include <thread>
+#include "Maps.h" 
 
-// идея танчики на 2-х в консоле
- 
- 
-// временное объявление функций
-void gotoxy(int xpos, int ypos);
-void rendering();
-void right();
-void left();
-void down();
-void up();
-void look();
 
-/*   как выглядит функция перемещения:
-void right() 
+
+
+struct Point
 {
-    gotoxy(x, y);
-    cout << 0;
-    if (x + 1 < v.size() && v[x + 1][y] != 1)
-    {
-        x += 1;
-    }
-    look();       --- надо переписать!!!
-    gotoxy(0, 0);
-}
+    int x;
+    int y;
+
+};
+
+struct Player
+{
+    Point tankPos;
+    bool baseAlive = true;
+    Point spawnPos;
+};
 
 
-*/
-
-
-
-
-/* 
-     элемент           обозначение       номер в векторе      char
-0) просто поле           .                       0          46    46
-1) танк                 []                     11 12        133  135
-2) танк противника      {}                     21 22        123  125
-3) разрушаемая стена    ::                     3  3         58    58
-4) река                 ~~                     4 4          126  126
-5) куст                 ??                     5 5          63    63
-
-*/
-
-
-
-
-// Состояние игры - если true тогда игра идет, если false игра заканчивается и выводится game over
-bool game = true;
-
-
-// tex (бэк) вектор с чиселками
-std::vector<std::vector<int>> tex(20, std::vector<int>(40, 0));
-
-
-// rendor вектор (графическая часть которую видел игрок)
-std::vector<std::vector<char>> render(20, std::vector<char>(40, 46));
-
+std::vector<std::vector<std::string>> render(20, std::vector<std::string>(20, "..")); 
 
 // тыкает курсором в консоле (для графики*)
-void gotoxy(int xpos, int ypos) 
+void gotoxy(int xpos, int ypos)
 {
     COORD scrn;
     HANDLE hOuput = GetStdHandle(STD_OUTPUT_HANDLE);
-    scrn.X = xpos; scrn.Y = ypos;
+    scrn.X = 2*xpos; scrn.Y = ypos;
     SetConsoleCursorPosition(hOuput, scrn);
 }
 
 
-void rendering() // отрисовывает игровое поле
+void rendering(std::string(*render)[20]) // отрисовывает игровое поле
 {
 
     gotoxy(0, 0);
     for (int i = 0; i < 20; ++i)
     {
-        for (int j = 0; j < 40; j++)
+        for (int j = 0; j < 20; j++)
         {
             std::cout << render[i][j];
         }
@@ -89,60 +54,85 @@ void rendering() // отрисовывает игровое поле
     gotoxy(0, 0);
 }
 
-void look() // ставит "render[x][y]" на выбранное место
+void look(std::string** render) // ставит "render[x][y]" на выбранное место
 {
-    gotoxy(33, 34);
-    std::cout << render[33][34];
+    gotoxy(13, 14);
+    std::cout << render[13][14];
     gotoxy(0, 0);
 }
 
+void spawnRender()
+{
+    std::cout << "[" << "]";
+}
+
+void spawn(Player & p)
+{
+    p.tankPos.x = p.spawnPos.x;
+    p.tankPos.y = p.spawnPos.y;
+    gotoxy(p.tankPos.x, p.tankPos.y);
+    spawnRender();
+}
+
+
+
 int main()
 {   
-    look();
-   // render[8][38] = '[';
-   // render[8][39] = ']';
-   // tex[8][38] = 11;
-   // tex[8][39] = 12;
-    rendering(); 
-    std::thread th1([]() {
-        while (game) 
+    // Состояние игры - если true тогда игра идет, если false игра заканчивается и выводится game over
+    bool game = true;
+
+    Player p1;
+    p1.spawnPos.x = 11;
+    p1.spawnPos.y = 18;
+
+   SetConsoleOutputCP(CP_UTF8);
+   for (int i = 0; i < 20; i++)
+   {
+       for (int j = 0; j < 20; j++)
+       {
+           render[i][j] = map2[i][j];
+       }
+   }
+
+    rendering(map2); 
+    spawn(p1);
+     
+    while (game)
+    {
+        clock_t start_time = clock(); // задержка падения кубика
+
+
+        if (_kbhit())
         {
-            if (_kbhit())
+            int a, b;
+            b = _getch();
+            a = _getch();
+
+            if (b == 224)
             {
-                int a, b;
-                b = _getch();
-                a = _getch();
-
-                if (b == 224)
+                if (a == 77)
                 {
-                    if (a == 77)
-                    {
-                        //right();
-                    }
+                    //right();
+                }
 
-                    if (a == 75)
-                    {
-                        //left();
-                    }
+                if (a == 75)
+                {
+                    //left();
+                }
 
-                    if (a == 80)
-                    {
-                        //down();
-                    }
+                if (a == 80)
+                {
+                    //down();
+                }
+                if (a == 72)
+                {
+                    //up();
                 }
             }
         }
 
-
-        });
-
-
-    while (game == true)
-    {
-        clock_t start_time = clock(); // задержка падения кубика
         while ((clock() - start_time) / CLOCKS_PER_SEC < 0.02) {}
 
-        gotoxy(0, 0);
 
     }
 
